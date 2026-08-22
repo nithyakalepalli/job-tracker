@@ -4,11 +4,20 @@ from database import engine, Base, SessionLocal
 import models
 import schemas
 from typing import Optional
+from fastapi.middleware.cors import CORSMiddleware
 
 #"look at every table class that inherits from Base, and create it in the database if it doesn't already exist.
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
+#explicitly allows requests from your React dev server's address. In a real production app, you'd list your actual deployed frontend URL here too.
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 #this creates a fresh database "session"
 def get_db():
