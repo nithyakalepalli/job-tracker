@@ -6,9 +6,15 @@ function App() {
   const [applications, setApplications] = useState([]);
   const [company, setCompany] = useState('');
   const [role, setRole] = useState('');
+  const [filterCompany, setFilterCompany] = useState('');
+  const [filterStatus, setFilterStatus] = useState('');
 
   const fetchApplications = () => {
-    fetch('http://127.0.0.1:8000/applications')
+    const params = new URLSearchParams();
+    if (filterCompany) params.append('company', filterCompany);
+    if (filterStatus) params.append('status', filterStatus);
+
+    fetch(`http://127.0.0.1:8000/applications?${params.toString()}`)
       .then((response) => response.json())
       .then((data) => setApplications(data))
       .catch((error) => console.error('Error fetching applications:', error));
@@ -16,7 +22,7 @@ function App() {
 
   useEffect(() => {
     fetchApplications();
-  }, []);
+  }, [filterCompany, filterStatus]);
 
   const handleSubmit = (event) => {
     event.preventDefault();
@@ -73,6 +79,26 @@ function App() {
         />
         <button type="submit">Add Application</button>
       </form>
+
+      <div>
+        <input
+          type="text"
+          placeholder="Search by company..."
+          value={filterCompany}
+          onChange={(e) => setFilterCompany(e.target.value)}
+        />
+        <select
+          value={filterStatus}
+          onChange={(e) => setFilterStatus(e.target.value)}
+        >
+          <option value="">All statuses</option>
+          {STATUS_OPTIONS.map((status) => (
+            <option key={status} value={status}>
+              {status}
+            </option>
+          ))}
+        </select>
+      </div>
 
       <ul>
         {applications.map((app) => (
