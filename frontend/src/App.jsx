@@ -6,6 +6,9 @@ function App() {
   const [applications, setApplications] = useState([]);
   const [company, setCompany] = useState('');
   const [role, setRole] = useState('');
+  const [dateApplied, setDateApplied] = useState('');
+  const [jobUrl, setJobUrl] = useState('');
+  const [notes, setNotes] = useState('');
   const [filterCompany, setFilterCompany] = useState('');
   const [filterStatus, setFilterStatus] = useState('');
 
@@ -30,12 +33,21 @@ function App() {
     fetch('http://127.0.0.1:8000/applications', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ company, role }),
+      body: JSON.stringify({
+        company,
+        role,
+        date_applied: dateApplied || null,
+        job_url: jobUrl || null,
+        notes: notes || null,
+      }),
     })
       .then((response) => response.json())
       .then(() => {
         setCompany('');
         setRole('');
+        setDateApplied('');
+        setJobUrl('');
+        setNotes('');
         fetchApplications();
       })
       .catch((error) => console.error('Error creating application:', error));
@@ -60,9 +72,32 @@ function App() {
       .catch((error) => console.error('Error deleting application:', error));
   };
 
+    const statusCounts = STATUS_OPTIONS.reduce((counts, status) => {
+      counts[status] = applications.filter((app) => app.status === status).length;
+      return counts;
+    }, {});
+
+    const totalApplications = applications.length;
+    const responded = applications.filter((app) => app.status !== 'Applied').length;
+    const responseRate = totalApplications > 0
+      ? Math.round((responded / totalApplications) * 100)
+      : 0;
+
   return (
     <div>
       <h1>Job Application Tracker</h1>
+        <div>
+          <h2>Dashboard</h2>
+          <p>Total applications: {totalApplications}</p>
+          <p>Response rate: {responseRate}%</p>
+          <ul>
+            {STATUS_OPTIONS.map((status) => (
+              <li key={status}>
+                {status}: {statusCounts[status]}
+              </li>
+            ))}
+          </ul>
+        </div>
 
       <form onSubmit={handleSubmit}>
         <input
@@ -76,6 +111,23 @@ function App() {
           placeholder="Role"
           value={role}
           onChange={(e) => setRole(e.target.value)}
+        />
+        <input
+          type="date"
+          value={dateApplied}
+          onChange={(e) => setDateApplied(e.target.value)}
+        />
+        <input
+          type="text"
+          placeholder="Job posting URL"
+          value={jobUrl}
+          onChange={(e) => setJobUrl(e.target.value)}
+        />
+        <input
+          type="text"
+          placeholder="Notes"
+          value={notes}
+          onChange={(e) => setNotes(e.target.value)}
         />
         <button type="submit">Add Application</button>
       </form>
@@ -103,7 +155,7 @@ function App() {
       <ul>
         {applications.map((app) => (
           <li key={app.id}>
-            {app.company} — {app.role}{' '}
+            <strong>{app.company}</strong> — {app.role}{' '}
             <select
               value={app.status}
               onChange={(e) => handleStatusChange(app.id, e.target.value)}
@@ -115,6 +167,15 @@ function App() {
               ))}
             </select>
             <button onClick={() => handleDelete(app.id)}>Delete</button>
+            <div>
+              {app.date_applied && <span>Applied: {app.date_applied} </span>}
+              {app.job_url && (
+                <a href={app.job_url} target="_blank" rel="noreferrer">
+                  Posting
+                </a>
+              )}
+              {app.notes && <p>{app.notes}</p>}
+            </div>
           </li>
         ))}
       </ul>
