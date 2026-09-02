@@ -1,6 +1,9 @@
 import { useState, useEffect } from 'react';
 import './App.css';
 
+const API_URL = import.meta.env.VITE_API_URL;
+console.log('API_URL is:', API_URL);
+
 const STATUS_OPTIONS = ['Applied', 'Screening', 'Interview', 'Offer', 'Rejected'];
 
 function App() {
@@ -18,7 +21,7 @@ function App() {
     if (filterCompany) params.append('company', filterCompany);
     if (filterStatus) params.append('status', filterStatus);
 
-    fetch(`http://127.0.0.1:8000/applications?${params.toString()}`)
+    fetch(`${API_URL}/applications?${params.toString()}`)
       .then((response) => response.json())
       .then((data) => setApplications(data))
       .catch((error) => console.error('Error fetching applications:', error));
@@ -31,7 +34,7 @@ function App() {
   const handleSubmit = (event) => {
     event.preventDefault();
 
-    fetch('http://127.0.0.1:8000/applications', {
+    fetch(`${API_URL}/applications`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -55,7 +58,7 @@ function App() {
   };
 
   const handleStatusChange = (id, newStatus) => {
-    fetch(`http://127.0.0.1:8000/applications/${id}`, {
+    fetch(`${API_URL}/applications/${id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ status: newStatus }),
@@ -66,7 +69,7 @@ function App() {
   };
 
   const handleDelete = (id) => {
-    fetch(`http://127.0.0.1:8000/applications/${id}`, {
+    fetch(`${API_URL}/applications/${id}`, {
       method: 'DELETE',
     })
       .then(() => fetchApplications())
